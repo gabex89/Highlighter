@@ -1,3 +1,28 @@
+const highlightCorrectAnswers = () => {
+    Object.keys(jsonData).forEach(questionId => {
+        const questionData = jsonData[questionId];
+        const correctAnswers = questionData.correct;
+        const questionList = document.querySelector(`.wpProQuiz_questionList[data-question_id="${questionId}"]`);
+        if (questionList) {
+            const items = questionList.querySelectorAll('.wpProQuiz_questionListItem');
+            items.forEach(item => {
+                const isVisible = item.offsetParent !== null;
+                if (isVisible) {
+                    const pos = parseInt(item.getAttribute('data-pos'), 10);
+                    if (correctAnswers[pos]) {
+                        item.style.backgroundColor = '#B0DAB0';
+                        // Select the corresponding input element
+                        const input = item.querySelector('input[type="radio"], input[type="checkbox"]');
+                        if (input) {
+                            input.checked = true;
+                        }
+                    }
+                }
+            });
+        }
+    });
+};
+
 const jsonData = {
     "30001": {"type": "single", "id": 30001, "catId": 0, "points": 1, "correct": [0, 0, 1]},
     "30002": {"type": "single", "id": 30002, "catId": 0, "points": 1, "correct": [0, 1, 0]},
@@ -1339,108 +1364,3 @@ const jsonData = {
     "31181": {"type": "single", "id": 31181, "catId": 0, "points": 1, "correct": [1, 0, 0]},
     "31182": {"type": "single", "id": 31182, "catId": 0, "points": 1, "correct": [1, 0, 0]}
 };
-
-const highlightCorrectAnswers = () => {
-    Object.keys(jsonData).forEach(questionId => {
-        const questionData = jsonData[questionId];
-        const correctAnswers = questionData.correct;
-        const questionList = document.querySelector(`.wpProQuiz_questionList[data-question_id="${questionId}"]`);
-        if (questionList) {
-            const items = questionList.querySelectorAll('.wpProQuiz_questionListItem');
-            items.forEach(item => {
-                const isVisible = item.offsetParent !== null;
-                if (isVisible) {
-                    const pos = parseInt(item.getAttribute('data-pos'), 10);
-                    if (correctAnswers[pos]) {
-                        item.style.backgroundColor = '#B0DAB0';
-                        // Select the corresponding input element
-                        const input = item.querySelector('input[type="radio"], input[type="checkbox"]');
-                        if (input) {
-                            input.checked = true;
-                        }
-                    }
-                }
-            });
-        }
-    });
-};
-
-const minSuccessRate = 0.80;
-const maxSuccessRate = 0.92;
-let iterationCount = 0;
-const maxIterations = 892;
-
-const highlightAndSubmitAnswers = (shouldSucceed) => {
-    Object.keys(jsonData).forEach(questionId => {
-        const questionData = jsonData[questionId];
-        const correctAnswers = questionData.correct;
-
-        // Find the question list item by question ID
-        const questionList = document.querySelector(`.wpProQuiz_questionList[data-question_id="${questionId}"]`);
-
-        if (questionList) {
-            const items = questionList.querySelectorAll('.wpProQuiz_questionListItem');
-            let incorrectItems = [];
-
-            items.forEach(item => {
-                // Check if the item is visible
-                const isVisible = item.offsetParent !== null;
-
-                if (isVisible) {
-                    const pos = parseInt(item.getAttribute('data-pos'), 10);
-                    const isCorrectAnswer = correctAnswers[pos];
-
-                    if (isCorrectAnswer) {
-                        if (shouldSucceed) {
-                            item.style.backgroundColor = '#B0DAB0';  // Highlight correct answer
-
-                            // Select the corresponding input element
-                            const input = item.querySelector('input[type="radio"], input[type="checkbox"]');
-                            if (input) {
-                                input.checked = true;
-                            }
-                        }
-                    } else {
-                        incorrectItems.push(item);
-                    }
-                }
-            });
-
-            if (!shouldSucceed && incorrectItems.length > 0) {
-                // Randomly select an incorrect answer
-                const randomIncorrectItem = incorrectItems[Math.floor(Math.random() * incorrectItems.length)];
-                randomIncorrectItem.style.backgroundColor = '#FFBABA';  // Highlight incorrect answer
-
-                // Select the corresponding input element
-                const input = randomIncorrectItem.querySelector('input[type="radio"], input[type="checkbox"]');
-                if (input) {
-                    input.checked = true;
-                }
-            }
-
-            // Find and click the "check" button with a random delay
-            const checkButton = document.querySelector('input[name="check"]');
-            if (checkButton) {
-                checkButton.click();
-            }
-
-
-            // Find and click the "next" button with a random delay
-            const nextButton = document.querySelector('input[name="next"]');
-            if (nextButton) {
-                nextButton.click();
-            }
-        }
-    });
-};
-
-const runScript = () => {
-    if (iterationCount < maxIterations) {
-        const successRate = Math.random() * (maxSuccessRate - minSuccessRate) + minSuccessRate;
-        const shouldSucceed = Math.random() < successRate;
-        highlightAndSubmitAnswers(shouldSucceed);
-        iterationCount++;
-    }
-};
-
-runScript();
